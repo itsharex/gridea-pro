@@ -253,28 +253,61 @@ var errRemoteFileNotFound = errors.New("remote file not found")
 // getGithubFileSHA 获取 GitHub 上文件的 SHA。
 //   - 文件存在且 200：返回 sha, nil
 //   - 文件真不存在（404）：返回 "", errRemoteFileNotFound
-//   - 其他错误（403 限流 / 5xx / 网络中断等）：返回 "", err —— 必须透传，
-//     调用方不能降级为 create，否则会对已有文件发无 sha PUT 触发 422
+//   - 其他错误（403 限流 / 5xx / 网络 / HTTP/2 stream cancel 等）：返回 "", err
+//     —— 必须透传，调用方不能降级为 create，否则会对已有文件发无 sha PUT 触发 422
 //
-// DoHTTPWithRetry（#46）兜底 429 / 5xx / 瞬时错误。GitHub 的 secondary rate limit
-// 大概率撞在这条 GET 上，不退避就会把连锁 422 打到 PUT 上。
+// 重试策略在这里自己做一层（3 次指数退避），不走 DoHTTPWithRetry：原因是
+// GitHub 在 secondary rate limit 下会对 HTTP/2 stream 发 CANCEL，cancel 出现在
+// body 读取阶段（headers 已 200）而 DoHTTPWithRetry 只看 client.Do 的直接返回。
+// 这里把"发请求 + 读 body + 解析"三步绑在一起重试，才能吞掉 stream cancel。
 func (s *CdnUploadService) getGithubFileSHA(ctx context.Context, setting domain.CdnSetting, remotePath, branch string) (string, error) {
 	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/contents/%s?ref=%s",
 		setting.GithubUser, setting.GithubRepo, remotePath, branch)
 
-	buildReq := func() (*http.Request, error) {
-		req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
-		if err != nil {
-			return nil, err
+	const maxAttempts = 3
+	var lastErr error
+	for attempt := 1; attempt <= maxAttempts; attempt++ {
+		if err := ctx.Err(); err != nil {
+			return "", err
 		}
-		req.Header.Set("Authorization", "Bearer "+setting.GithubToken)
-		req.Header.Set("Accept", "application/vnd.github.v3+json")
-		return req, nil
+		sha, err := s.tryGetGithubFileSHA(ctx, setting, url)
+		if err == nil {
+			return sha, nil
+		}
+		// 404 是明确答案，不重试
+		if errors.Is(err, errRemoteFileNotFound) {
+			return "", err
+		}
+		// 只对瞬时错误重试（stream cancel / 5xx / 429 / 网络抖动等）
+		if !isTransientSHAErr(err) {
+			return "", fmt.Errorf("查询 %s 远端 SHA 失败: %w", remotePath, err)
+		}
+		lastErr = err
+		if attempt < maxAttempts {
+			wait := time.Duration(1<<(attempt-1)) * 500 * time.Millisecond
+			select {
+			case <-ctx.Done():
+				return "", ctx.Err()
+			case <-time.After(wait):
+			}
+		}
 	}
+	return "", fmt.Errorf("查询 %s 远端 SHA 重试 %d 次仍失败: %w", remotePath, maxAttempts, lastErr)
+}
 
-	resp, err := deploy.DoHTTPWithRetry(ctx, s.httpClient(ctx), buildReq, deploy.HTTPRetryPolicy{MaxAttempts: 3}, nil)
+// tryGetGithubFileSHA 执行一次 GET+解析。
+// 状态码映射：200 → sha、404 → errRemoteFileNotFound、其他 → HTTP X 错误（可重试判定）。
+func (s *CdnUploadService) tryGetGithubFileSHA(ctx context.Context, setting domain.CdnSetting, url string) (string, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
-		return "", fmt.Errorf("查询 %s 远端 SHA 失败: %w", remotePath, err)
+		return "", err
+	}
+	req.Header.Set("Authorization", "Bearer "+setting.GithubToken)
+	req.Header.Set("Accept", "application/vnd.github.v3+json")
+
+	resp, err := s.httpClient(ctx).Do(req)
+	if err != nil {
+		return "", err
 	}
 	defer resp.Body.Close()
 
@@ -282,15 +315,42 @@ func (s *CdnUploadService) getGithubFileSHA(ctx context.Context, setting domain.
 	case http.StatusOK:
 		var result githubContentsResponse
 		if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-			return "", fmt.Errorf("解析 %s 远端元数据失败: %w", remotePath, err)
+			return "", fmt.Errorf("解析远端元数据失败: %w", err)
 		}
 		return result.SHA, nil
 	case http.StatusNotFound:
 		return "", errRemoteFileNotFound
 	default:
-		// 403 限流 / 5xx / 其他：当成查询失败往上抛，让 uploadToGitHub 不要误判为"新文件"
-		return "", fmt.Errorf("查询 %s 远端 SHA HTTP %d", remotePath, resp.StatusCode)
+		return "", fmt.Errorf("HTTP %d", resp.StatusCode)
 	}
+}
+
+// isTransientSHAErr 判定一次 GET SHA 的错误是否值得重试。
+//   - 网络层瞬时错误（reset / EOF / timeout）
+//   - HTTP/2 stream cancel / INTERNAL_ERROR（GitHub secondary rate limit 常用信号）
+//   - 返回特定 HTTP 状态码（403 / 408 / 429 / 5xx）
+func isTransientSHAErr(err error) bool {
+	if err == nil {
+		return false
+	}
+	msg := err.Error()
+	// 网络层 / HTTP/2 层瞬时错误
+	if strings.Contains(msg, "connection reset") ||
+		strings.Contains(msg, "broken pipe") ||
+		strings.Contains(msg, "EOF") ||
+		strings.Contains(msg, "timeout") ||
+		strings.Contains(msg, "stream error") ||
+		strings.Contains(msg, "CANCEL") ||
+		strings.Contains(msg, "INTERNAL_ERROR") {
+		return true
+	}
+	// 明确的可重试状态码（403 覆盖 GitHub 的 secondary rate limit）
+	for _, code := range []string{"HTTP 403", "HTTP 408", "HTTP 429", "HTTP 500", "HTTP 502", "HTTP 503", "HTTP 504"} {
+		if strings.Contains(msg, code) {
+			return true
+		}
+	}
+	return false
 }
 
 // gitBlobSHA 计算 git blob 的 SHA1（与 GitHub API 一致）

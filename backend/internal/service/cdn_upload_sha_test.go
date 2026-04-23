@@ -114,6 +114,36 @@ func TestGetGithubFileSHA_RateLimited_DoesNotMasqueradeAsMissing(t *testing.T) {
 	}
 }
 
+// 核心回归 #2：stream cancel / 5xx / 403 等瞬时错误应该在 getGithubFileSHA 内部
+// 透明重试。前两次 503、第三次 200 模拟 GitHub secondary rate limit 恢复过程。
+func TestGetGithubFileSHA_RetriesThroughTransientFailures(t *testing.T) {
+	var hits int
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		hits++
+		if hits < 3 {
+			http.Error(w, "rate limited", http.StatusServiceUnavailable)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"sha":"cafe"}`))
+	}))
+	defer srv.Close()
+
+	svc := newSHATestService(srv.URL)
+	setting := domain.CdnSetting{GithubUser: "u", GithubRepo: "r", GithubToken: "t"}
+
+	sha, err := svc.getGithubFileSHA(context.Background(), setting, "x.png", "main")
+	if err != nil {
+		t.Fatalf("expected retry to succeed, got %v", err)
+	}
+	if sha != "cafe" {
+		t.Errorf("got sha %q, want cafe", sha)
+	}
+	if hits != 3 {
+		t.Errorf("expected 3 attempts, got %d", hits)
+	}
+}
+
 // rewriteTransport 把所有请求的 scheme+host 替换成 to，保留 path + query。
 // httptest 给的是随机端口 http://127.0.0.1:xxxx —— 不 patch 代码就只能靠 transport
 // 改写目的地，这样就不用把 api.github.com 的基址提出来做配置。

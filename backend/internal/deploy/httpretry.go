@@ -128,6 +128,8 @@ func isRetryableStatus(code int, allow []int) bool {
 // isRetryableErr 粗略判定"值得重试的网络错误"。
 // - net.Error.Timeout() / Temporary()
 // - connection reset / broken pipe / no such host / EOF 等字符串兜底
+// - HTTP/2 stream cancel（GitHub 在 secondary rate limit 下常用这条信号替代
+//   明确的 429）：错误文本里会出现 "stream error" / "CANCEL" / "INTERNAL_ERROR"
 func isRetryableErr(err error) bool {
 	if err == nil {
 		return false
@@ -141,7 +143,9 @@ func isRetryableErr(err error) bool {
 		strings.Contains(msg, "broken pipe") ||
 		strings.Contains(msg, "no such host") ||
 		strings.Contains(msg, "connection refused") ||
-		strings.Contains(msg, "EOF")
+		strings.Contains(msg, "EOF") ||
+		strings.Contains(msg, "stream error") ||
+		strings.Contains(msg, "INTERNAL_ERROR")
 }
 
 // parseRetryAfter 解析 429 响应的 Retry-After 头。
