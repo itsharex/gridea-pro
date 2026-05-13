@@ -130,7 +130,11 @@ func (s *DeployService) DeployToRemote(ctx context.Context) error {
 			s.log(ctx, msg)
 		})
 		if err != nil {
-			s.log(ctx, fmt.Sprintf("CDN upload warning: %v", err))
+			// CDN 配置加载失败属于致命错误：再继续走下去 result 是零值，
+			// cdnFailureAbortReason 会判定无失败而放行，最终用旧 CDN URL 上线、
+			// 新加的图片全 404。必须 fail-fast，让用户立刻看到具体错误（如 token 失效）。
+			s.log(ctx, fmt.Sprintf("❌ CDN 配置加载失败: %v", err))
+			return fmt.Errorf("CDN 配置加载失败: %w", err)
 		}
 		if reason := cdnFailureAbortReason(result); reason != "" {
 			s.log(ctx, fmt.Sprintf("❌ %s，已中止部署以避免上线图片 404", reason))
@@ -210,11 +214,15 @@ func (s *DeployService) log(ctx context.Context, msg string) {
 	}
 }
 
-// cdn 上传失败阈值：超过任一条件都视为"过多"，部署中止。
-// 比例偏保守（10%），绝对数给定下限（5）避免小图库被 1~2 个误差锁死。
+// cdn 上传失败阈值。两条独立路径，命中任一即中止部署：
+//   - 灾难性失败率（>= 50%）：覆盖小站全裂场景（3/3 全失败、4/5 失败等），
+//     不再受 cdnFailureAbsoluteCap 保护——失败比例已经说明是确定性问题（token 失效、
+//     配置错），不是 transient 噪声。
+//   - 常规双门槛：比例（>= 10%）AND 绝对数（>= 5），避免大站被 1~2 个噪声误差打断。
 const (
 	cdnFailureRatioThreshold = 0.10
 	cdnFailureAbsoluteCap    = 5
+	cdnCatastrophicRatio     = 0.50
 )
 
 // cdnFailureAbortReason 判断是否因 CDN 上传失败过多而中止部署。
@@ -225,7 +233,8 @@ func cdnFailureAbortReason(r CdnUploadResultShape) string {
 	}
 	failed := len(r.GetFailures())
 	ratio := float64(failed) / float64(r.GetTotal())
-	if ratio >= cdnFailureRatioThreshold && failed >= cdnFailureAbsoluteCap {
+	if ratio >= cdnCatastrophicRatio ||
+		(ratio >= cdnFailureRatioThreshold && failed >= cdnFailureAbsoluteCap) {
 		return fmt.Sprintf("%d 个文件失败（共 %d 个，占比 %.0f%%）", failed, r.GetTotal(), ratio*100)
 	}
 	return ""
