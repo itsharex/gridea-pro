@@ -13,7 +13,8 @@
         "language": "Sprache",
         "saved": "Gespeichert",
         "search": "Suchen",
-        "clear": "Löschen"
+        "clear": "Löschen",
+        "markdownSupported": "Markdown-Syntax unterstützt"
     },
     "nav": {
         "preview": "Vorschau",
@@ -529,7 +530,6 @@
         "saveFailed": "Speichern fehlgeschlagen",
         "updateFailed": "Aktualisierung fehlgeschlagen",
         "deleteFailed": "Löschen fehlgeschlagen",
-        "markdownSupported": "Markdown-Syntax unterstützt",
         "setPublishTime": "Veröffentlichungszeit festlegen"
     },
     "preferences": {

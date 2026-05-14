@@ -13,7 +13,8 @@
     "language": "语 言",
     "saved": "已保存",
     "search": "搜索",
-    "clear": "清除"
+    "clear": "清除",
+    "markdownSupported": "支持 Markdown 语法"
   },
   "nav": {
     "preview": "预 览",
@@ -530,7 +531,6 @@
     "saveFailed": "保存失败",
     "updateFailed": "更新失败",
     "deleteFailed": "删除失败",
-    "markdownSupported": "支持 Markdown 语法",
     "setPublishTime": "设置发布时间"
   },
   "preferences": {

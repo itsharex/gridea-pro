@@ -13,7 +13,8 @@
         "language": "Язык",
         "saved": "Сохранено",
         "search": "Поиск",
-        "clear": "Очистить"
+        "clear": "Очистить",
+        "markdownSupported": "Поддерживается синтаксис Markdown"
     },
     "nav": {
         "preview": "Предпросмотр",
@@ -529,7 +530,6 @@
         "saveFailed": "Ошибка сохранения",
         "updateFailed": "Ошибка обновления",
         "deleteFailed": "Ошибка удаления",
-        "markdownSupported": "Поддерживается синтаксис Markdown",
         "setPublishTime": "Установить время публикации"
     },
     "preferences": {

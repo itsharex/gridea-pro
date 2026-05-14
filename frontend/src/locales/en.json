@@ -13,7 +13,8 @@
         "language": "Language",
         "saved": "Saved",
         "search": "Search",
-        "clear": "Clear"
+        "clear": "Clear",
+        "markdownSupported": "Markdown syntax supported"
     },
     "nav": {
         "preview": "Preview",
@@ -530,7 +531,6 @@
         "saveFailed": "Save failed",
         "updateFailed": "Update failed",
         "deleteFailed": "Delete failed",
-        "markdownSupported": "Markdown syntax supported",
         "setPublishTime": "Set publish time"
     },
     "preferences": {

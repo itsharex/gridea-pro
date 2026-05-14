@@ -13,7 +13,8 @@
         "language": "語言",
         "saved": "已儲存",
         "search": "搜尋",
-        "clear": "清除"
+        "clear": "清除",
+        "markdownSupported": "支援 Markdown 語法"
     },
     "nav": {
         "preview": "預覽",
@@ -529,7 +530,6 @@
         "saveFailed": "儲存失敗",
         "updateFailed": "更新失敗",
         "deleteFailed": "刪除失敗",
-        "markdownSupported": "支援 Markdown 語法",
         "setPublishTime": "設定發布時間"
     },
     "preferences": {

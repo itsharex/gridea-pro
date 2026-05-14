@@ -30,7 +30,7 @@ v-for="(tag, index) in filteredTags" :key="tag.name"
         <div class="flex items-center justify-between px-4 pb-3 pt-2 border-t border-border/30">
             <!-- 左下角：Markdown 支持提示 + 发布时间设置 -->
             <div class="flex items-center gap-1.5">
-                <span class="text-muted-foreground/40" :title="t('memo.markdownSupported')">
+                <span class="text-muted-foreground/40" :title="t('common.markdownSupported')">
                     <MarkdownIcon class="w-[18px] h-[11px]" />
                 </span>
                 <Popover @update:open="onPickerOpen">
@@ -96,13 +96,9 @@ import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { useMemoStore } from '@/stores/memo'
 import { PaperAirplaneIcon, CalendarIcon, ClockIcon, XMarkIcon } from '@heroicons/vue/24/outline'
+import MarkdownIcon from '@/components/Base/MarkdownIcon.vue'
 
 dayjs.extend(customParseFormat)
-
-// Markdown 标志：heroicons 无此图标，内联官方 Markdown mark（纯展示）
-const MarkdownIcon = {
-  template: `<svg viewBox="0 0 208 128" xmlns="http://www.w3.org/2000/svg"><rect width="198" height="118" x="5" y="5" ry="10" fill="none" stroke="currentColor" stroke-width="10"/><path fill="currentColor" d="M30 98V30h20l20 25 20-25h20v68H90V59L70 84 50 59v39zm125 0l-30-33h20V30h20v35h20z"/></svg>`,
-}
 
 interface Props {
     placeholder?: string

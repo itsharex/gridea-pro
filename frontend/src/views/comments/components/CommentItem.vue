@@ -75,16 +75,21 @@ v-if="isReplying"
             <textarea
 v-model="replyContent" :placeholder="`${t('comment.reply')} @${comment.nickname}：`" rows="3"
                 class="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-y min-h-[80px]"></textarea>
-            <div class="flex justify-end gap-2 mt-3">
-                <Button
+            <div class="flex items-center justify-between mt-3">
+                <span class="text-muted-foreground/40" :title="t('common.markdownSupported')">
+                    <MarkdownIcon class="w-[18px] h-[11px]" />
+                </span>
+                <div class="flex gap-2">
+                    <Button
 variant="outline"
-                    class="text-primary/80 text-xs px-4 h-8 border border-primary/10 rounded-full cursor-pointer hover:bg-primary/10 hover:text-primary transition-colors"
-                    @click="cancelReply">{{ t('comment.cancel') }}</Button>
-                <Button
+                        class="text-primary/80 text-xs px-4 h-8 border border-primary/10 rounded-full cursor-pointer hover:bg-primary/10 hover:text-primary transition-colors"
+                        @click="cancelReply">{{ t('comment.cancel') }}</Button>
+                    <Button
 variant="default" class="text-xs px-4 h-8 border border-primary/10 rounded-full cursor-pointer"
-                    @click="submitReply">
-                    {{ t('comment.reply') }}
-                </Button>
+                        @click="submitReply">
+                        {{ t('comment.reply') }}
+                    </Button>
+                </div>
             </div>
         </div>
 
@@ -117,6 +122,7 @@ import {
     ChevronDoubleUpIcon
 } from '@heroicons/vue/24/outline'
 import { Button } from '@/components/ui/button'
+import MarkdownIcon from '@/components/Base/MarkdownIcon.vue'
 import MarkdownContent from './MarkdownContent.vue'
 import { useContentOverflow } from '@/composables/useContentOverflow'
 import { BrowserOpenURL, Environment } from '@/wailsjs/runtime'

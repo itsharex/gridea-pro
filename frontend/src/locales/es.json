@@ -13,7 +13,8 @@
         "language": "Idioma",
         "saved": "Guardado",
         "search": "Buscar",
-        "clear": "Borrar"
+        "clear": "Borrar",
+        "markdownSupported": "Sintaxis Markdown compatible"
     },
     "nav": {
         "preview": "Vista previa",
@@ -529,7 +530,6 @@
         "saveFailed": "Error al guardar",
         "updateFailed": "Error al actualizar",
         "deleteFailed": "Error al eliminar",
-        "markdownSupported": "Sintaxis Markdown compatible",
         "setPublishTime": "Establecer hora de publicación"
     },
     "preferences": {
