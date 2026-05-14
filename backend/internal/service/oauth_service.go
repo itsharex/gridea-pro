@@ -156,11 +156,16 @@ func (s *OAuthService) SaveManualCredentials(ctx context.Context, providerID str
 			return fmt.Errorf("保存 %s 凭证失败: %w", field, err)
 		}
 	}
-	// 更新 meta：标记为手动配置
+	// 更新 meta：标记为手动配置。
+	// 注意：已通过 OAuth 连接的平台不降级——保存设置时前端会把 OAuth 拿到的
+	// token 一并回传并路由到这里，若无条件改成 manual，会导致「已连接」在每次
+	// 改配置保存后错误退回「已配置」。只有原本不是 OAuth 连接的才标记 manual。
 	if len(credentials) > 0 {
 		meta := s.configMgr.GetPlatformMeta(providerID)
-		meta.ConnectedVia = "manual"
-		_ = s.configMgr.SavePlatformMeta(providerID, meta)
+		if meta.ConnectedVia != "oauth" {
+			meta.ConnectedVia = "manual"
+			_ = s.configMgr.SavePlatformMeta(providerID, meta)
+		}
 	}
 	return nil
 }
