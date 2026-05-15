@@ -401,6 +401,13 @@
             "baseURLDescAnthropic": "Anthropic-kompatibler Endpunkt (Root-URL, ohne /v1 — wird automatisch ergänzt). Für Relay/Proxy oder selbst gehostete Dienste.",
             "fillBaseURLFirst": "Bitte zuerst die Base URL eingeben"
         },
+        "notifications": {
+            "title": "Benachrichtigungen",
+            "deployComplete": "Systembenachrichtigung nach Deploy-Abschluss anzeigen",
+            "deployCompleteDesc": "Erfolg und Fehler erscheinen im Mitteilungszentrum — praktisch, um das Ergebnis nach dem Wechsel zu einer anderen App zu prüfen",
+            "saveSuccess": "Benachrichtigungseinstellungen gespeichert",
+            "saveFailed": "Speichern der Benachrichtigungseinstellungen fehlgeschlagen"
+        },
         "network": {
             "title": "Server",
             "platform": "Plattform",

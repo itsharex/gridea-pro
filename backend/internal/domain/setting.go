@@ -17,6 +17,17 @@ type Setting struct {
 	PlatformConfigs map[string]map[string]any `json:"platformConfigs,omitempty"`
 	ProxyEnabled    bool                      `json:"proxyEnabled"`
 	ProxyURL        string                    `json:"proxyURL"`
+	// NotifyOnDeployComplete 部署完成（成功 / 失败 / 取消）后是否弹系统通知中心通知。
+	// 用指针区分"未设置（默认开）"和"显式关闭"，避免新增字段对老用户默认变 false。
+	NotifyOnDeployComplete *bool `json:"notifyOnDeployComplete,omitempty"`
+}
+
+// IsDeployNotifyEnabled 返回部署完成通知是否启用。字段未设置时默认开启。
+func (s *Setting) IsDeployNotifyEnabled() bool {
+	if s.NotifyOnDeployComplete == nil {
+		return true
+	}
+	return *s.NotifyOnDeployComplete
 }
 
 // SensitiveFields 各平台需要存入 Keychain 的敏感字段
@@ -174,6 +185,11 @@ func (s Setting) MarshalJSON() ([]byte, error) {
 	buf.WriteString(`,"proxyURL":`)
 	proxyURL, _ := json.Marshal(s.ProxyURL)
 	buf.Write(proxyURL)
+
+	if s.NotifyOnDeployComplete != nil {
+		buf.WriteString(`,"notifyOnDeployComplete":`)
+		buf.WriteString(strconv.FormatBool(*s.NotifyOnDeployComplete))
+	}
 
 	buf.WriteByte('}')
 	return buf.Bytes(), nil
@@ -346,6 +362,10 @@ func (s Setting) Clone() Setting {
 			}
 			cp.PlatformConfigs[platform] = m
 		}
+	}
+	if s.NotifyOnDeployComplete != nil {
+		v := *s.NotifyOnDeployComplete
+		cp.NotifyOnDeployComplete = &v
 	}
 	return cp
 }

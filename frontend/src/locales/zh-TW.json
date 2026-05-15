@@ -401,6 +401,13 @@
             "baseURLDescAnthropic": "填寫 Anthropic 相容介面地址（中轉站根地址，無需帶 /v1，會自動補全），用於中轉站或自部署服務。",
             "fillBaseURLFirst": "請先填寫 Base URL"
         },
+        "notifications": {
+            "title": "通知",
+            "deployComplete": "部署完成時顯示系統通知",
+            "deployCompleteDesc": "部署成功或失敗都會在系統通知中心顯示一條紀錄，方便切走應用後檢視結果",
+            "saveSuccess": "通知設定已儲存",
+            "saveFailed": "通知設定儲存失敗"
+        },
         "network": {
             "title": "設定",
             "platform": "平台",

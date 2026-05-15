@@ -401,6 +401,13 @@
             "baseURLDescAnthropic": "Endpoint compatible con Anthropic (URL raíz, sin /v1 — se añade automáticamente). Úsalo para relays/proxies o servicios autoalojados.",
             "fillBaseURLFirst": "Introduce primero la Base URL"
         },
+        "notifications": {
+            "title": "Notificaciones",
+            "deployComplete": "Mostrar notificación del sistema al completar el despliegue",
+            "deployCompleteDesc": "Tanto los éxitos como los fallos aparecerán en el centro de notificaciones del sistema, útil para consultar el resultado tras cambiar de aplicación",
+            "saveSuccess": "Configuración de notificaciones guardada",
+            "saveFailed": "No se pudo guardar la configuración de notificaciones"
+        },
         "network": {
             "title": "Servidor",
             "platform": "Plataforma",

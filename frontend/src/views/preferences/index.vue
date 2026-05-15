@@ -235,6 +235,21 @@ v-for="item in navItems" :key="item.key"
         </div>
       </div>
 
+      <!-- 通知 -->
+      <div v-if="activeTab === 'notifications'" class="animate-fade-in">
+        <h2 class="text-xl font-semibold mb-6 text-foreground">{{ t('settings.notifications.title') }}</h2>
+        <div class="flex justify-between items-start py-4 border-b border-border gap-6">
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-medium text-foreground mb-1">{{ t('settings.notifications.deployComplete') }}</div>
+            <div class="text-xs text-muted-foreground">{{ t('settings.notifications.deployCompleteDesc') }}</div>
+          </div>
+          <div class="flex-shrink-0 pt-1">
+            <Switch :checked="deployNotifyEnabled" size="sm"
+              @update:checked="(v: boolean) => onToggleDeployNotify(v)" />
+          </div>
+        </div>
+      </div>
+
       <!-- 关于 -->
       <div v-if="activeTab === 'about'" class="animate-fade-in">
         <h2 class="text-xl font-semibold mb-6 text-foreground">{{ t('nav.about') }}</h2>
@@ -319,11 +334,13 @@ import {
   TrashIcon,
   PencilIcon,
   SparklesIcon,
+  BellIcon,
   ArrowPathIcon,
   ArrowTopRightOnSquareIcon,
 } from '@heroicons/vue/24/outline'
 import { EventsEmit, BrowserOpenURL } from '@/wailsjs/runtime'
 import { OpenFolderDialog, GetSites, AddSite, RemoveSite, UpdateSites, SwitchSite } from '@/wailsjs/go/app/App'
+import { GetSetting, SaveSettingFromFrontend } from '@/wailsjs/go/facade/SettingFacade'
 import {
   GetAISetting,
   SaveAISettingFromFrontend,
@@ -380,6 +397,7 @@ const navItems = computed(() => [
   { key: 'language', icon: LanguageIcon, label: t('common.language') },
   { key: 'sites', icon: GlobeAltIcon, label: t('settings.sites.title') },
   { key: 'ai', icon: SparklesIcon, label: t('settings.ai.title') },
+  { key: 'notifications', icon: BellIcon, label: t('settings.notifications.title') },
   { key: 'about', icon: InformationCircleIcon, label: t('nav.about') },
 ])
 
@@ -598,10 +616,39 @@ watch(locale, (val) => {
   currentLanguage.value = val as LocaleType
 })
 
+// ─── 通知设置 ───────────────────────────────────────────
+// 未设置时默认开启（和后端 IsDeployNotifyEnabled 对齐：nil → true）
+const deployNotifyEnabled = ref(true)
+
+const loadNotifySetting = async () => {
+  try {
+    const setting = await GetSetting()
+    deployNotifyEnabled.value = (setting as any).notifyOnDeployComplete !== false
+  } catch (e) {
+    console.error('Failed to load notify setting:', e)
+  }
+}
+
+const onToggleDeployNotify = async (val: boolean) => {
+  const previous = deployNotifyEnabled.value
+  deployNotifyEnabled.value = val
+  try {
+    const setting = await GetSetting()
+    ;(setting as any).notifyOnDeployComplete = val
+    await SaveSettingFromFrontend(setting)
+    toast.success(t('settings.notifications.saveSuccess'))
+  } catch (e: any) {
+    console.error('Save notify setting failed:', e)
+    deployNotifyEnabled.value = previous
+    toast.error(t('settings.notifications.saveFailed'))
+  }
+}
+
 onMounted(async () => {
   currentLanguage.value = locale.value as LocaleType
   await loadSites()
   await loadAISetting()
+  await loadNotifySetting()
 })
 
 const loadSites = async () => {

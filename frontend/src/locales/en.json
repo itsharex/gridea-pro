@@ -401,6 +401,13 @@
             "upstream429": "Model service is busy, please try again later",
             "noTitle": "Please enter the article title first"
         },
+        "notifications": {
+            "title": "Notifications",
+            "deployComplete": "Show system notification on deploy completion",
+            "deployCompleteDesc": "Both success and failure will appear in your OS notification center, useful for checking the result after switching away from the app",
+            "saveSuccess": "Notification settings saved",
+            "saveFailed": "Failed to save notification settings"
+        },
         "network": {
             "title": "Server",
             "platform": "Platform",

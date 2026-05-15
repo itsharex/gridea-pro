@@ -401,6 +401,13 @@
       "upstream429": "模型服务繁忙，请稍后再试",
       "noTitle": "请先填写文章标题"
     },
+    "notifications": {
+      "title": "通知",
+      "deployComplete": "部署完成时显示系统通知",
+      "deployCompleteDesc": "部署成功或失败都会在系统通知中心显示一条记录，方便切走应用后查看结果",
+      "saveSuccess": "通知设置已保存",
+      "saveFailed": "通知设置保存失败"
+    },
     "network": {
       "title": "配 置",
       "platform": "平 台",

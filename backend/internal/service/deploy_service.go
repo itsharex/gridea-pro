@@ -2,10 +2,12 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"gridea-pro/backend/internal/deploy"
 	"gridea-pro/backend/internal/domain"
 	"gridea-pro/backend/internal/engine"
+	"gridea-pro/backend/internal/notify"
 	"os"
 	"path/filepath"
 	"sync"
@@ -60,7 +62,7 @@ func (s *DeployService) SetCdnUploadService(cdnUpload *CdnUploadService) {
 	s.cdnUploadService = cdnUpload
 }
 
-func (s *DeployService) DeployToRemote(ctx context.Context) error {
+func (s *DeployService) DeployToRemote(ctx context.Context) (err error) {
 	// 两层 ctx 叠加：
 	// - 外层 WithCancel：暴露 cancel 给 CancelDeploy 调用（#42 / PR #93 可取消）
 	// - 内层 WithTimeout：避免 SFTP io.Copy / FTP Stor 等对 ctx 不敏感的阻塞点永久
@@ -83,6 +85,10 @@ func (s *DeployService) DeployToRemote(ctx context.Context) error {
 	defer timeoutCancel()
 	ctx = deployCtx
 
+	// 通知用闭包变量：声明在 defer 之前，部署进展中再填实际值。
+	startedAt := time.Now()
+	var platform, siteDomain string
+
 	// Ensure we reset the flag when done
 	defer func() {
 		s.mu.Lock()
@@ -90,6 +96,8 @@ func (s *DeployService) DeployToRemote(ctx context.Context) error {
 		s.activeCancel = nil
 		s.mu.Unlock()
 		cancelFn()
+		// 部署结束（成功 / 失败 / 取消）后发系统通知中心；偏好关闭则跳过。
+		s.notifyDeployResult(err, time.Since(startedAt), platform, siteDomain)
 	}()
 
 	s.log(ctx, "Starting deployment check...")
@@ -107,6 +115,8 @@ func (s *DeployService) DeployToRemote(ctx context.Context) error {
 		creds := s.oauthService.GetAllCredentials()
 		setting.InjectCredentials(creds)
 	}
+	platform = setting.Platform
+	siteDomain = setting.Domain()
 
 	s.log(ctx, fmt.Sprintf("Deploying to domain: %s", setting.Domain()))
 
@@ -212,6 +222,52 @@ func (s *DeployService) log(ctx context.Context, msg string) {
 	if ctx != nil {
 		runtime.EventsEmit(ctx, "deploy-log", msg)
 	}
+}
+
+// notifyDeployResult 部署结束后发系统通知中心通知。
+// 用户在偏好里关闭后跳过；通知发送失败不影响主流程。
+// 用独立的 context.Background() 读设置，避免部署 ctx 已超时/取消导致读不到。
+func (s *DeployService) notifyDeployResult(deployErr error, dur time.Duration, platform, siteDomain string) {
+	setting, err := s.settingRepo.GetSetting(context.Background())
+	if err != nil || !setting.IsDeployNotifyEnabled() {
+		return
+	}
+	site := siteDomain
+	if site == "" {
+		site = "—"
+	}
+	plat := platform
+	if plat == "" {
+		plat = "—"
+	}
+	var title, body string
+	switch {
+	case deployErr == nil:
+		title = "部署成功"
+		body = fmt.Sprintf("%s · %s · 用时 %s", site, plat, formatDeployDuration(dur))
+	case errors.Is(deployErr, context.Canceled):
+		title = "部署已取消"
+		body = fmt.Sprintf("%s · %s · 已停止", site, plat)
+	default:
+		title = "部署失败"
+		body = fmt.Sprintf("%s · %s · %s", site, plat, truncateRunes(deployErr.Error(), 100))
+	}
+	_ = notify.Send(title, body)
+}
+
+func formatDeployDuration(d time.Duration) string {
+	if d < time.Minute {
+		return fmt.Sprintf("%d 秒", int(d.Seconds()))
+	}
+	return fmt.Sprintf("%d 分 %d 秒", int(d.Minutes()), int(d.Seconds())%60)
+}
+
+func truncateRunes(s string, max int) string {
+	r := []rune(s)
+	if len(r) <= max {
+		return s
+	}
+	return string(r[:max]) + "…"
 }
 
 // cdn 上传失败阈值。两条独立路径，命中任一即中止部署：
