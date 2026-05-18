@@ -307,7 +307,7 @@ const groups = computed(() => {
 const activeGroup = ref('')
 
 watch(groups, (newVal) => {
-  if (newVal.length > 0 && !activeGroup.value) {
+  if (newVal.length > 0 && !newVal.includes(activeGroup.value)) {
     activeGroup.value = newVal[0]
   }
 }, { immediate: true })
