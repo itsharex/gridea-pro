@@ -9,6 +9,7 @@ import (
 	"io/fs"
 	"log"
 	"path/filepath"
+	"sort"
 	"sync"
 	"time"
 
@@ -290,6 +291,7 @@ func (r *memoRepository) GetByID(ctx context.Context, id string) (*domain.Memo, 
 	return nil, fmt.Errorf("memo not found")
 }
 
+// List 按 CreatedAt 倒序返回；cache 存储顺序保持不变。
 func (r *memoRepository) List(ctx context.Context) ([]domain.Memo, error) {
 	if err := r.loadIfNeeded(); err != nil {
 		return nil, err
@@ -301,5 +303,8 @@ func (r *memoRepository) List(ctx context.Context) ([]domain.Memo, error) {
 	// Return a copy to prevent external modification
 	result := make([]domain.Memo, len(r.cache))
 	copy(result, r.cache)
+	sort.SliceStable(result, func(i, j int) bool {
+		return result[i].CreatedAt.After(result[j].CreatedAt)
+	})
 	return result, nil
 }
