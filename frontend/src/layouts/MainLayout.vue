@@ -290,7 +290,10 @@ fill-rule="evenodd" clip-rule="evenodd"
           </div>
           <div v-else-if="updateState === 'error'" class="flex items-start gap-2 text-xs text-destructive">
             <ExclamationCircleIcon class="size-4 flex-shrink-0 mt-0.5" />
-            <span class="break-all">{{ updateError }}</span>
+            <div class="space-y-0.5">
+              <div class="font-medium">{{ t(`update.error.${updateErrorKind}.title`) }}</div>
+              <div class="text-muted-foreground text-[11px]">{{ t(`update.error.${updateErrorKind}.hint`) }}</div>
+            </div>
           </div>
         </div>
 
@@ -458,7 +461,7 @@ const updateState = ref<UpdateState>('idle')
 const downloadReceived = ref(0)
 const downloadTotal = ref(0)
 const downloadPercent = ref(0)
-const updateError = ref('')
+const updateErrorKind = ref('unknown')
 
 const formatBytes = (n: number) => {
   if (!n || n <= 0) return '0 B'
@@ -782,7 +785,7 @@ const resetDownloadState = () => {
   downloadReceived.value = 0
   downloadTotal.value = 0
   downloadPercent.value = 0
-  updateError.value = ''
+  updateErrorKind.value = 'unknown'
 }
 
 const startUpdate = async () => {
@@ -790,9 +793,9 @@ const startUpdate = async () => {
   updateState.value = 'downloading'
   try {
     await StartDownload()
-  } catch (err: any) {
+  } catch {
     updateState.value = 'error'
-    updateError.value = String(err?.message || err)
+    updateErrorKind.value = 'unknown'
   }
 }
 
@@ -805,9 +808,9 @@ const applyUpdate = async () => {
   try {
     await ApplyUpdate()
     // 后端会自行重启应用，前端不需要额外处理
-  } catch (err: any) {
+  } catch {
     updateState.value = 'error'
-    updateError.value = String(err?.message || err)
+    updateErrorKind.value = 'unknown'
   }
 }
 
@@ -924,7 +927,7 @@ onMounted(() => {
   })
   EventsOn('update:error', (payload: any) => {
     updateState.value = 'error'
-    updateError.value = payload?.message || 'Unknown error'
+    updateErrorKind.value = payload?.kind || 'unknown'
   })
 
   // 原生菜单调用部署

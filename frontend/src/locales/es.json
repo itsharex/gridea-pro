@@ -43,7 +43,18 @@
         "restart": "Reiniciar",
         "retry": "Reintentar",
         "readyToRestart": "Descarga completa. Reinicia para aplicar la actualización.",
-        "upToDate": "Ya estás al día"
+        "upToDate": "Ya estás al día",
+        "error": {
+            "network_timeout": { "title": "Tiempo agotado", "hint": "Red inestable, inténtalo de nuevo" },
+            "tls_handshake": { "title": "Conexión segura fallida", "hint": "Un firewall puede bloquear GitHub" },
+            "conn_failed": { "title": "Servidor inaccesible", "hint": "Verifica el acceso a github.com" },
+            "http_5xx": { "title": "Servicio GitHub no disponible", "hint": "Inténtalo más tarde" },
+            "http_404": { "title": "Enlace caducado", "hint": "Vuelve a buscar actualizaciones" },
+            "checksum_mismatch": { "title": "Verificación del paquete fallida", "hint": "Archivo eliminado, reinténtalo" },
+            "url_not_trusted": { "title": "Origen inesperado", "hint": "Descarga bloqueada por seguridad" },
+            "disk_io": { "title": "Error de archivo local", "hint": "Verifica espacio en disco y permisos" },
+            "unknown": { "title": "Error de descarga", "hint": "Verifica la red e inténtalo de nuevo" }
+        }
     },
     "article": {
         "new": "Nuevo",

@@ -43,7 +43,18 @@
         "restart": "재시작",
         "retry": "다시 시도",
         "readyToRestart": "다운로드 완료. 재시작하여 업데이트 적용",
-        "upToDate": "이미 최신 버전입니다"
+        "upToDate": "이미 최신 버전입니다",
+        "error": {
+            "network_timeout": { "title": "다운로드 시간 초과", "hint": "네트워크 불안정, 다시 시도하세요" },
+            "tls_handshake": { "title": "보안 연결 실패", "hint": "방화벽이 GitHub을 차단할 수 있습니다" },
+            "conn_failed": { "title": "서버에 연결할 수 없음", "hint": "github.com 접속을 확인하세요" },
+            "http_5xx": { "title": "GitHub 일시 중단", "hint": "잠시 후 다시 시도하세요" },
+            "http_404": { "title": "다운로드 링크 만료", "hint": "업데이트를 다시 확인하세요" },
+            "checksum_mismatch": { "title": "패키지 검증 실패", "hint": "파일이 삭제됨, 다시 시도하세요" },
+            "url_not_trusted": { "title": "비정상 출처", "hint": "보안상 다운로드 차단됨" },
+            "disk_io": { "title": "로컬 파일 오류", "hint": "디스크 공간과 권한 확인" },
+            "unknown": { "title": "다운로드 실패", "hint": "네트워크 확인 후 다시 시도" }
+        }
     },
     "article": {
         "new": "새 글",

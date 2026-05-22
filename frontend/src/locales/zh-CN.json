@@ -43,7 +43,45 @@
     "restart": "立即重启",
     "retry": "重试",
     "readyToRestart": "下载完成，重启以应用更新",
-    "upToDate": "当前已是最新版本"
+    "upToDate": "当前已是最新版本",
+    "error": {
+      "network_timeout": {
+        "title": "下载超时",
+        "hint": "网络较慢或不稳定，请稍后重试"
+      },
+      "tls_handshake": {
+        "title": "无法建立安全连接",
+        "hint": "请检查网络环境，公司网络、VPN 或防火墙可能拦截了 GitHub"
+      },
+      "conn_failed": {
+        "title": "无法连接服务器",
+        "hint": "请检查网络连接，确认能正常访问 github.com"
+      },
+      "http_5xx": {
+        "title": "GitHub 服务暂时不可用",
+        "hint": "稍后再试"
+      },
+      "http_404": {
+        "title": "下载链接已失效",
+        "hint": "请重新检查更新"
+      },
+      "checksum_mismatch": {
+        "title": "安装包校验失败",
+        "hint": "文件已自动删除，请重试。如反复出现请反馈给开发者"
+      },
+      "url_not_trusted": {
+        "title": "更新包来源异常",
+        "hint": "已拦截非预期下载源，请反馈给开发者"
+      },
+      "disk_io": {
+        "title": "本地文件操作失败",
+        "hint": "请检查磁盘空间和写入权限"
+      },
+      "unknown": {
+        "title": "下载失败",
+        "hint": "请检查网络后重试"
+      }
+    }
   },
   "article": {
     "new": "新文章",

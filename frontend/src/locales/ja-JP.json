@@ -43,7 +43,18 @@
         "restart": "再起動",
         "retry": "再試行",
         "readyToRestart": "ダウンロード完了。再起動して更新を適用",
-        "upToDate": "すでに最新バージョンです"
+        "upToDate": "すでに最新バージョンです",
+        "error": {
+            "network_timeout": { "title": "ダウンロードがタイムアウト", "hint": "ネットワークが不安定です。再試行してください" },
+            "tls_handshake": { "title": "セキュア接続に失敗", "hint": "ファイアウォール等で GitHub がブロックされている可能性" },
+            "conn_failed": { "title": "サーバーに接続できません", "hint": "github.com への接続を確認してください" },
+            "http_5xx": { "title": "GitHub サービス利用不可", "hint": "しばらくしてから再試行してください" },
+            "http_404": { "title": "ダウンロードリンクが期限切れ", "hint": "更新を再確認してください" },
+            "checksum_mismatch": { "title": "パッケージ検証失敗", "hint": "ファイルを削除しました。再試行してください" },
+            "url_not_trusted": { "title": "不審な更新元", "hint": "ダウンロードがブロックされました" },
+            "disk_io": { "title": "ローカルファイル操作エラー", "hint": "ディスク容量と権限を確認してください" },
+            "unknown": { "title": "ダウンロード失敗", "hint": "ネットワークを確認して再試行してください" }
+        }
     },
     "article": {
         "new": "新規記事",

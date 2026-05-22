@@ -43,7 +43,18 @@
         "restart": "立即重啟",
         "retry": "重試",
         "readyToRestart": "下載完成，重啟以套用更新",
-        "upToDate": "已是最新版本"
+        "upToDate": "已是最新版本",
+        "error": {
+            "network_timeout": { "title": "下載逾時", "hint": "網路不穩，請稍後重試" },
+            "tls_handshake": { "title": "無法建立安全連線", "hint": "請檢查網路，可能被防火牆攔截" },
+            "conn_failed": { "title": "無法連接伺服器", "hint": "請確認可正常存取 github.com" },
+            "http_5xx": { "title": "GitHub 服務暫時不可用", "hint": "請稍後再試" },
+            "http_404": { "title": "下載連結已失效", "hint": "請重新檢查更新" },
+            "checksum_mismatch": { "title": "安裝包驗證失敗", "hint": "檔案已刪除，請重試" },
+            "url_not_trusted": { "title": "更新包來源異常", "hint": "已攔截非預期下載源" },
+            "disk_io": { "title": "本機檔案操作失敗", "hint": "請檢查磁碟空間與權限" },
+            "unknown": { "title": "下載失敗", "hint": "請檢查網路後重試" }
+        }
     },
     "article": {
         "new": "新增文章",

@@ -43,7 +43,18 @@
         "restart": "Reiniciar",
         "retry": "Tentar novamente",
         "readyToRestart": "Download concluído. Reinicie para aplicar a atualização.",
-        "upToDate": "Você já está atualizado"
+        "upToDate": "Você já está atualizado",
+        "error": {
+            "network_timeout": { "title": "Tempo esgotado", "hint": "Rede instável, tente novamente" },
+            "tls_handshake": { "title": "Conexão segura falhou", "hint": "Firewall pode bloquear GitHub" },
+            "conn_failed": { "title": "Servidor inacessível", "hint": "Verifique acesso a github.com" },
+            "http_5xx": { "title": "Serviço GitHub indisponível", "hint": "Tente novamente mais tarde" },
+            "http_404": { "title": "Link expirado", "hint": "Verifique atualizações novamente" },
+            "checksum_mismatch": { "title": "Verificação do pacote falhou", "hint": "Arquivo removido, tente novamente" },
+            "url_not_trusted": { "title": "Origem inesperada", "hint": "Download bloqueado por segurança" },
+            "disk_io": { "title": "Erro em arquivo local", "hint": "Verifique espaço em disco e permissões" },
+            "unknown": { "title": "Falha no download", "hint": "Verifique a rede e tente novamente" }
+        }
     },
     "article": {
         "new": "Novo",

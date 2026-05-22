@@ -43,7 +43,45 @@
         "restart": "Restart",
         "retry": "Retry",
         "readyToRestart": "Download complete. Restart to apply update.",
-        "upToDate": "You're on the latest version"
+        "upToDate": "You're on the latest version",
+        "error": {
+            "network_timeout": {
+                "title": "Download timed out",
+                "hint": "Network may be slow or unstable. Please try again."
+            },
+            "tls_handshake": {
+                "title": "Cannot establish secure connection",
+                "hint": "Check your network — corporate networks, VPNs, or firewalls may block GitHub."
+            },
+            "conn_failed": {
+                "title": "Cannot reach server",
+                "hint": "Please check your network and ensure github.com is reachable."
+            },
+            "http_5xx": {
+                "title": "GitHub service temporarily unavailable",
+                "hint": "Please try again later."
+            },
+            "http_404": {
+                "title": "Download link expired",
+                "hint": "Please check for updates again."
+            },
+            "checksum_mismatch": {
+                "title": "Package integrity check failed",
+                "hint": "The file has been removed. Please retry. If the issue persists, report it to the developers."
+            },
+            "url_not_trusted": {
+                "title": "Unexpected update source",
+                "hint": "An unexpected download source was blocked. Please report this to the developers."
+            },
+            "disk_io": {
+                "title": "Local file operation failed",
+                "hint": "Please check disk space and write permissions."
+            },
+            "unknown": {
+                "title": "Download failed",
+                "hint": "Please check your network and try again."
+            }
+        }
     },
     "article": {
         "new": "New",

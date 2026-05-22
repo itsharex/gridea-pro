@@ -602,12 +602,67 @@ func (f *UpdateFacade) emitReady(path string) {
 }
 
 func (f *UpdateFacade) emitError(err error) {
+	// 原始 err 写日志（保留 URL / SAS token 等技术细节供排查），UI 只收分类后的 kind。
+	slog.Error("更新下载失败", "error", err.Error())
 	if WailsContext == nil {
 		return
 	}
 	wailsRuntime.EventsEmit(WailsContext, "update:error", map[string]any{
-		"message": err.Error(),
+		"kind": classifyUpdateErr(err),
 	})
+}
+
+// classifyUpdateErr 把下载链路上的各种 error 归到 UI 能展示的有限几类。
+// 顺序很重要：先识别结构化错误（httpStatusError / net.Error），再做字符串匹配
+// 兜底，避免 errors.As 链路被 fmt.Errorf 包装吞掉时漏判。
+func classifyUpdateErr(err error) string {
+	if err == nil {
+		return "unknown"
+	}
+
+	var statusErr *httpStatusError
+	if errors.As(err, &statusErr) {
+		switch {
+		case statusErr.code == http.StatusNotFound:
+			return "http_404"
+		case statusErr.code >= 500:
+			return "http_5xx"
+		}
+		return "unknown"
+	}
+
+	var netErr net.Error
+	if errors.As(err, &netErr) && netErr.Timeout() {
+		return "network_timeout"
+	}
+
+	msg := err.Error()
+	switch {
+	case strings.Contains(msg, "TLS handshake"):
+		return "tls_handshake"
+	case strings.Contains(msg, "no such host"),
+		strings.Contains(msg, "connection refused"),
+		strings.Contains(msg, "connection reset"),
+		strings.Contains(msg, "broken pipe"),
+		strings.Contains(msg, "network is unreachable"):
+		return "conn_failed"
+	case strings.Contains(msg, "完整性校验"),
+		strings.Contains(msg, "哈希不匹配"),
+		strings.Contains(msg, "SHA256SUMS"):
+		return "checksum_mismatch"
+	case strings.Contains(msg, "拒绝下载"),
+		strings.Contains(msg, "非预期的更新包"):
+		return "url_not_trusted"
+	case strings.Contains(msg, "创建临时文件"),
+		strings.Contains(msg, "写入失败"),
+		strings.Contains(msg, "关闭文件"),
+		strings.Contains(msg, "计算本地哈希"):
+		return "disk_io"
+	case strings.Contains(msg, "timeout"),
+		strings.Contains(msg, "deadline exceeded"):
+		return "network_timeout"
+	}
+	return "unknown"
 }
 
 // extRule 描述合法发布包后缀及其自更新优先级。

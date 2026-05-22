@@ -43,7 +43,18 @@
         "restart": "Neu starten",
         "retry": "Erneut versuchen",
         "readyToRestart": "Download abgeschlossen. Neu starten, um das Update anzuwenden.",
-        "upToDate": "Bereits auf dem neuesten Stand"
+        "upToDate": "Bereits auf dem neuesten Stand",
+        "error": {
+            "network_timeout": { "title": "Zeitüberschreitung", "hint": "Netzwerk instabil, bitte erneut versuchen" },
+            "tls_handshake": { "title": "Sichere Verbindung fehlgeschlagen", "hint": "Firewall könnte GitHub blockieren" },
+            "conn_failed": { "title": "Server nicht erreichbar", "hint": "Zugriff auf github.com prüfen" },
+            "http_5xx": { "title": "GitHub vorübergehend nicht verfügbar", "hint": "Später erneut versuchen" },
+            "http_404": { "title": "Download-Link abgelaufen", "hint": "Erneut nach Updates suchen" },
+            "checksum_mismatch": { "title": "Paketprüfung fehlgeschlagen", "hint": "Datei gelöscht, bitte erneut versuchen" },
+            "url_not_trusted": { "title": "Unerwartete Quelle", "hint": "Download aus Sicherheitsgründen blockiert" },
+            "disk_io": { "title": "Lokaler Dateifehler", "hint": "Speicherplatz und Berechtigungen prüfen" },
+            "unknown": { "title": "Download fehlgeschlagen", "hint": "Netzwerk prüfen und erneut versuchen" }
+        }
     },
     "article": {
         "new": "Neu",

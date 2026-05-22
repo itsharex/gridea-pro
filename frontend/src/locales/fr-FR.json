@@ -43,7 +43,18 @@
         "restart": "Redémarrer",
         "retry": "Réessayer",
         "readyToRestart": "Téléchargement terminé. Redémarrez pour appliquer la mise à jour.",
-        "upToDate": "Vous êtes à jour"
+        "upToDate": "Vous êtes à jour",
+        "error": {
+            "network_timeout": { "title": "Délai dépassé", "hint": "Réseau instable, veuillez réessayer" },
+            "tls_handshake": { "title": "Connexion sécurisée impossible", "hint": "Un pare-feu peut bloquer GitHub" },
+            "conn_failed": { "title": "Serveur inaccessible", "hint": "Vérifiez l'accès à github.com" },
+            "http_5xx": { "title": "Service GitHub indisponible", "hint": "Veuillez réessayer plus tard" },
+            "http_404": { "title": "Lien de téléchargement expiré", "hint": "Veuillez vérifier les mises à jour" },
+            "checksum_mismatch": { "title": "Vérification du paquet échouée", "hint": "Fichier supprimé, veuillez réessayer" },
+            "url_not_trusted": { "title": "Source inattendue", "hint": "Téléchargement bloqué pour sécurité" },
+            "disk_io": { "title": "Erreur de fichier local", "hint": "Vérifiez l'espace disque et les permissions" },
+            "unknown": { "title": "Échec du téléchargement", "hint": "Vérifiez le réseau et réessayez" }
+        }
     },
     "article": {
         "new": "Nouveau",

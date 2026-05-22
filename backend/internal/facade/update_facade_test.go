@@ -732,3 +732,44 @@ func TestDoDownload_CancelStopsRetry(t *testing.T) {
 	}
 }
 
+// ─── classifyUpdateErr：UI 弹窗按 kind 查 i18n，分类错了用户看到的就是错文案 ──
+
+type fakeTimeoutErr struct{}
+
+func (fakeTimeoutErr) Error() string   { return "i/o timeout" }
+func (fakeTimeoutErr) Timeout() bool   { return true }
+func (fakeTimeoutErr) Temporary() bool { return true }
+
+func TestClassifyUpdateErr(t *testing.T) {
+	cases := []struct {
+		name string
+		err  error
+		want string
+	}{
+		{"nil", nil, "unknown"},
+		{"http_404", &httpStatusError{code: 404}, "http_404"},
+		{"http_500", &httpStatusError{code: 500}, "http_5xx"},
+		{"http_502", &httpStatusError{code: 502}, "http_5xx"},
+		{"http_403", &httpStatusError{code: 403}, "unknown"},
+		{"net_timeout", fakeTimeoutErr{}, "network_timeout"},
+		{"tls_handshake", errors.New(`Get "https://x": net/http: TLS handshake timeout`), "tls_handshake"},
+		{"no_such_host", errors.New("dial tcp: lookup x: no such host"), "conn_failed"},
+		{"conn_refused", errors.New("dial tcp 1.2.3.4:443: connection refused"), "conn_failed"},
+		{"conn_reset", errors.New("read tcp: connection reset by peer"), "conn_failed"},
+		{"checksum", errors.New("完整性校验失败: 期望 abc, 实际 def"), "checksum_mismatch"},
+		{"sums_missing", errors.New("SHA256SUMS 中未找到 x"), "checksum_mismatch"},
+		{"url_blocked", errors.New("拒绝下载：非预期的更新包 URL: https://evil"), "url_not_trusted"},
+		{"tmpfile", errors.New("创建临时文件失败: permission denied"), "disk_io"},
+		{"write_fail", errors.New("写入失败: no space left on device"), "disk_io"},
+		{"generic_timeout", errors.New("context deadline exceeded"), "network_timeout"},
+		{"unknown_fallback", errors.New("something completely different"), "unknown"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := classifyUpdateErr(tc.err); got != tc.want {
+				t.Errorf("classifyUpdateErr(%v) = %q, want %q", tc.err, got, tc.want)
+			}
+		})
+	}
+}
+
