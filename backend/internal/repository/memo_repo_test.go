@@ -47,7 +47,7 @@ func TestMemoListSortedByCreatedAtDesc(t *testing.T) {
 	}
 }
 
-func TestMemoSaveUsesLocalWallClockFormat(t *testing.T) {
+func TestMemoSaveUsesRFC3339WithLocalOffset(t *testing.T) {
 	dir := t.TempDir()
 	_ = os.MkdirAll(filepath.Join(dir, "config"), 0755)
 
@@ -57,7 +57,7 @@ func TestMemoSaveUsesLocalWallClockFormat(t *testing.T) {
 	repo := NewMemoRepository(dir)
 	ctx := context.Background()
 	if err := repo.SaveAll(ctx, []domain.Memo{
-		{ID: "from-utc", CreatedAt: utcMoment, UpdatedAt: localMoment, Tags: []string{}, Images: []string{}},
+		{ID: "x", CreatedAt: utcMoment, UpdatedAt: localMoment, Tags: []string{}, Images: []string{}},
 	}); err != nil {
 		t.Fatalf("SaveAll: %v", err)
 	}
@@ -68,17 +68,15 @@ func TestMemoSaveUsesLocalWallClockFormat(t *testing.T) {
 	}
 	body := string(data)
 
-	if strings.Contains(body, "Z\"") || strings.Contains(body, "+08:00") || strings.Contains(body, "+00:00") {
-		t.Fatalf("memos.json 不应再包含 RFC3339 TZ 后缀:\n%s", body)
-	}
-
-	wantCreated := utcMoment.Local().Format(domain.TimeLayout)
-	wantUpdated := localMoment.Format(domain.TimeLayout)
+	// 前端 toISOString() 发来的 UTC 必须 .Local() 切到本机再 Format，否则
+	// 会和后端 time.Now 产生的 UpdatedAt offset 不一致，同字段两种格式。
+	wantCreated := utcMoment.Local().Format(time.RFC3339)
+	wantUpdated := localMoment.Format(time.RFC3339)
 	if !strings.Contains(body, wantCreated) {
-		t.Fatalf("createdAt 期望本地 wall clock %q:\n%s", wantCreated, body)
+		t.Fatalf("createdAt 期望 %q:\n%s", wantCreated, body)
 	}
 	if !strings.Contains(body, wantUpdated) {
-		t.Fatalf("updatedAt 期望本地 wall clock %q:\n%s", wantUpdated, body)
+		t.Fatalf("updatedAt 期望 %q:\n%s", wantUpdated, body)
 	}
 }
 

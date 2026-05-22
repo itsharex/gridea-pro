@@ -104,8 +104,8 @@ func (r *memoRepository) saveCache() error {
 			Content:   m.Content,
 			Tags:      m.Tags,
 			Images:    m.Images,
-			CreatedAt: m.CreatedAt.Local().Format(domain.TimeLayout),
-			UpdatedAt: m.UpdatedAt.Local().Format(domain.TimeLayout),
+			CreatedAt: m.CreatedAt.Local().Format(time.RFC3339),
+			UpdatedAt: m.UpdatedAt.Local().Format(time.RFC3339),
 		}
 	}
 
